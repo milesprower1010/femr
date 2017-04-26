@@ -824,36 +824,7 @@ public class ResearchService implements IResearchService {
             totalForAvg += vitalValue;
             patientsTotal++;
 
-            // set RANGE LOW and HIGH if needed
-            if (vitalValue > resultSet.getDataRangeHigh()) {
-
-                resultSet.setDataRangeHigh(vitalValue);
-            }
-            if (vitalValue < resultSet.getDataRangeLow()) {
-
-                resultSet.setDataRangeLow(vitalValue);
-            }
-
-            // total patients for each value in map
-            ResearchResultItem resultItem;
-            if (datasetBuilder.containsKey(vitalValue)) {
-
-                resultItem = datasetBuilder.get(vitalValue);
-
-            } else {
-
-                resultItem = new ResearchResultItem();
-                resultItem.setPrimaryName(Float.toString(vitalValue));
-            }
-            // increment total by 1
-            float currentValue = resultItem.getPrimaryValue();
-
-            resultItem.setPrimaryValue(currentValue + 1);
-
-            getSecondaryData(filters, resultSet, patient, resultItem, encounter);
-
-            // put result item back into map
-            datasetBuilder.put(vitalValue, resultItem);
+            getSecondaryData(filters, resultSet, patient, encounter, vitalValue, datasetBuilder);
         }
 
         // save builder map as list in result set
@@ -949,36 +920,7 @@ public class ResearchService implements IResearchService {
             totalForAvg += vitalValue;
             patientsTotal++;
 
-            // set RANGE LOW and HIGH if needed
-            if (vitalValue > resultSet.getDataRangeHigh()) {
-
-                resultSet.setDataRangeHigh(vitalValue);
-            }
-            if (vitalValue < resultSet.getDataRangeLow()) {
-
-                resultSet.setDataRangeLow(vitalValue);
-            }
-
-            // total patients for each value in map
-            ResearchResultItem resultItem;
-            if (datasetBuilder.containsKey(vitalValue)) {
-
-                resultItem = datasetBuilder.get(vitalValue);
-
-            } else {
-
-                resultItem = new ResearchResultItem();
-                resultItem.setPrimaryName(Float.toString(vitalValue));
-            }
-            // increment total by 1
-            float currentValue = resultItem.getPrimaryValue();
-
-            resultItem.setPrimaryValue(currentValue + 1);
-
-            getSecondaryData(filters, resultSet, patient, resultItem, encounter);
-
-            // put result item back into map
-            datasetBuilder.put(vitalValue, resultItem);
+            getSecondaryData(filters, resultSet, patient, encounter, vitalValue, datasetBuilder);
         }
 
         // save builder map as list in result set
@@ -1034,37 +976,8 @@ public class ResearchService implements IResearchService {
             totalForAvg += age;
             patientsTotal++;
 
-            // set RANGE LOW and HIGH if needed
-            if (age > resultSet.getDataRangeHigh()) {
-
-                resultSet.setDataRangeHigh(age);
-            }
-            if (age < resultSet.getDataRangeLow()) {
-
-                resultSet.setDataRangeLow(age);
-            }
-
-            // total patients for each value in map
-            ResearchResultItem resultItem;
-            if (datasetBuilder.containsKey(age)) {
-
-                resultItem = datasetBuilder.get(age);
-
-            } else {
-
-                resultItem = new ResearchResultItem();
-                resultItem.setPrimaryName(Float.toString(age));
-            }
-            // increment total by 1
-            float currentValue = resultItem.getPrimaryValue();
-
-            resultItem.setPrimaryValue(currentValue + 1);
-
-            // @TODO - get secondary data
-            getSecondaryData(filters, resultSet, patient, resultItem, encounter);
-
-            // put result item back into map
-            datasetBuilder.put(age, resultItem);
+            // @TODO - get secondary data needs additional logic
+            getSecondaryData(filters, resultSet, patient, encounter, age, datasetBuilder);
 
         }
 
@@ -1081,7 +994,35 @@ public class ResearchService implements IResearchService {
         return resultSet;
     }
 
-    private void getSecondaryData(ResearchFilterItem filters, ResearchResultSetItem resultSet, IPatient patient, ResearchResultItem resultItem, IResearchEncounter encounter){
+    private void getSecondaryData(ResearchFilterItem filters, ResearchResultSetItem resultSet, IPatient patient,
+                                  IResearchEncounter encounter, Float valueToFilter, Map<Float, ResearchResultItem> datasetBuilder){
+
+        // set RANGE LOW and HIGH if needed
+        if (valueToFilter > resultSet.getDataRangeHigh()) {
+
+            resultSet.setDataRangeHigh(valueToFilter);
+        }
+        if (valueToFilter < resultSet.getDataRangeLow()) {
+
+            resultSet.setDataRangeLow(valueToFilter);
+        }
+
+        // total patients for each value in map
+        ResearchResultItem resultItem;
+        if (datasetBuilder.containsKey(valueToFilter)) {
+
+            resultItem = datasetBuilder.get(valueToFilter);
+
+        } else {
+
+            resultItem = new ResearchResultItem();
+            resultItem.setPrimaryName(Float.toString(valueToFilter));
+        }
+        // increment total by 1
+        float currentValue = resultItem.getPrimaryValue();
+
+        resultItem.setPrimaryValue(currentValue + 1);
+
         if (filters.getSecondaryDataset() != null) {
             if (filters.getSecondaryDataset().equals("gender")) {
 
@@ -1162,6 +1103,9 @@ public class ResearchService implements IResearchService {
                 resultItem.setSecondaryData(secondaryData);
             }
         }
+
+        // put result item back into map
+        datasetBuilder.put(valueToFilter, resultItem);
     }
 
     // do stuff specific to pregnancy requests
